@@ -1,5 +1,5 @@
 use dotenv::dotenv;
-use actix_web::{middleware, App, HttpServer};
+use actix_web::{App, HttpServer};
 use std::env;
 mod db;
 
@@ -8,13 +8,13 @@ async fn main()-> std::io::Result<()> {
     dotenv().ok();
 
     let server_url = env::var("SERVER_URL").expect("SERVER_URL Environment variable is not set.");
-    db::create_connection();
-    env::set_var("RUST_LOG", "actix_web=debug, actix_server=info");
-    env_logger::init();
+    let database = db::create_connection();
 
+    let user_collection = database.collection("User");
+    
     HttpServer::new(move || {
         App::new()
-        .wrap(middleware::Logger::default())
+        .data(AppState {})
     })
     .bind(server_url)?
     .run()
