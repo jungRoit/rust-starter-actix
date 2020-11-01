@@ -8,6 +8,7 @@ use service::user_service::UserService;
 
 mod service;
 mod dao;
+mod entity;
 
 pub struct ServiceManager {
     user: UserService

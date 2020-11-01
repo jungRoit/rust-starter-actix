@@ -1,5 +1,4 @@
-use mongodb::results::{DeleteResult, UpdateResult};
-use mongodb::{error::Error, results::InsertOneResult, Collection, Database};
+use mongodb::{error::Error, results::InsertOneResult, Database};
 use bson::{Document};
 
 pub fn get_all(connection: Database, collection_name: &str) -> mongodb::Cursor{

@@ -1,5 +1,5 @@
 use actix_web::{get, web, post, HttpResponse, Responder};
-use crate::service::user_service::User;
+use crate::entity::user::User;
 
 #[get("/users")]
 async fn get_users(app_data: web::Data<crate::AppState>) -> impl Responder {
