@@ -2,7 +2,9 @@ use serde::{Deserialize, Serialize};
 use bson::{Document, doc, Bson};
 // use bson::ordered::OrderedDocument;
 use mongodb::results::{DeleteResult, UpdateResult};
-use mongodb::{error::Error, results::InsertOneResult, Collection};
+use mongodb::{error::Error, results::InsertOneResult, Database};
+
+use crate::dao::generic_dao;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
@@ -13,7 +15,7 @@ pub struct User {
 
 #[derive(Clone)]
 pub struct UserService {
-  collection: Collection,
+  connection: Database,
 }
 
 
@@ -62,17 +64,20 @@ fn document_to_user(document: Document) -> User {
 
 }
 
+const COLLECTION_NAME: &str = "User";
+
 impl UserService {
-  pub fn new(collection: Collection) -> UserService {
-    UserService {collection}
+  pub fn new(connection: Database) -> UserService {
+    UserService {connection}
   }
   pub fn add_user(&self, user: &User) -> Result<InsertOneResult, Error> {
     println!("reached controller");
-    return self.collection.insert_one(user_to_document(user),None);
+    let document: Document = user_to_document(user);
+    return generic_dao::add(self.connection.clone(),COLLECTION_NAME, document);
   }
 
   pub fn get_users(&self) -> Result<Vec<User>, Error> {
-    let cursor = self.collection.find(None, None).unwrap();
+    let cursor = generic_dao::get_all(self.connection.clone(),COLLECTION_NAME);
     let mut data: Vec<User> = Vec::new();
 
     for result in cursor {

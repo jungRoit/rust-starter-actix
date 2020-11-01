@@ -7,6 +7,7 @@ mod controllers;
 use service::user_service::UserService;
 
 mod service;
+mod dao;
 
 pub struct ServiceManager {
     user: UserService
@@ -30,10 +31,10 @@ async fn main()-> std::io::Result<()> {
     let server_url = env::var("SERVER_URL").expect("SERVER_URL Environment variable is not set.");
     let database = db::create_connection();
 
-    let user_collection = database.collection("User");
+    // let user_collection = database.collection("User");
     
     HttpServer::new(move || {
-        let user_service_worker = UserService::new(user_collection.clone());
+        let user_service_worker = UserService::new(database.clone());
         let service_manager = ServiceManager::new(user_service_worker);
         App::new()
         .data(AppState {service_manager})
