@@ -2,6 +2,26 @@ use dotenv::dotenv;
 use actix_web::{App, HttpServer};
 use std::env;
 mod db;
+mod controllers;
+
+use service::user_service::UserService;
+
+mod service;
+
+pub struct ServiceManager {
+    user: UserService
+}
+
+impl ServiceManager {
+    pub fn new(user:UserService) -> Self {
+        ServiceManager {user}
+    }
+}
+
+
+struct AppState {
+    service_manager: ServiceManager
+}
 
 #[actix_rt::main]
 async fn main()-> std::io::Result<()> {
@@ -13,8 +33,12 @@ async fn main()-> std::io::Result<()> {
     let user_collection = database.collection("User");
     
     HttpServer::new(move || {
+        let user_service_worker = UserService::new(user_collection.clone());
+        let service_manager = ServiceManager::new(user_service_worker);
         App::new()
-        .data(AppState {})
+        .data(AppState {service_manager})
+        .configure(controllers::user_controller::init)
+
     })
     .bind(server_url)?
     .run()
