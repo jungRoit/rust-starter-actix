@@ -20,7 +20,6 @@ impl UserService {
     UserService {connection}
   }
   pub fn add_user(&self, user: &User) -> Result<InsertOneResult, Error> {
-    println!("reached controller");
     let document: Document = entity::user::deserialize(user);
     return generic_dao::add(self.connection.clone(),COLLECTION_NAME, document);
   }

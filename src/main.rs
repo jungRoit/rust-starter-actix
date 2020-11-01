@@ -1,25 +1,15 @@
 use dotenv::dotenv;
 use actix_web::{App, HttpServer};
 use std::env;
+use service::user_service::UserService;
+use service_manager::ServiceManager;
+
 mod db;
 mod controllers;
-
-use service::user_service::UserService;
-
 mod service;
 mod dao;
 mod entity;
-
-pub struct ServiceManager {
-    user: UserService
-}
-
-impl ServiceManager {
-    pub fn new(user:UserService) -> Self {
-        ServiceManager {user}
-    }
-}
-
+mod service_manager;
 
 struct AppState {
     service_manager: ServiceManager
