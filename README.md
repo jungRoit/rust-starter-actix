@@ -1,4 +1,4 @@
-# rust-starter-actix
+# rust-starter-actix ![Build](https://github.com/jungRoit/rust-starter-actix/workflows/Build/badge.svg)
 
 ### Setup
 1. Setup [rust](https://www.rust-lang.org/tools/install) and `cargo`.
