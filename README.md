@@ -22,6 +22,7 @@
 | HOST        | Base Server URL e.g. `127.0.0.1:8000`                    |
 | DB_URL      | DB URL for mongodb e.g. `mongodb://127.0.0.1:27017/`     |
 | DB_NAME     | MongoDB database name. e.g. `local`                      |
+| RUST_LOG    | Configure log levels. e.g. `debug`, `info`               |
 
 ### Build
 
