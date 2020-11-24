@@ -41,3 +41,19 @@ $ cargo build --release
 ```bash
 $ cargo run
 ```
+
+## Formatter
+
+*Note: Make sure you have [rustfmt](https://github.com/rust-lang/rustfmt).*
+
+Check code formatting.
+
+```bash
+$ cargo fmt -- --check
+```
+
+Fix code formatting.
+
+```bash
+$ cargo fmt
+```
