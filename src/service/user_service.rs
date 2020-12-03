@@ -1,3 +1,4 @@
+use bson::oid::ObjectId;
 use bson::Document;
 use futures::stream::StreamExt;
 use mongodb::{error::Error, results::InsertOneResult, Database};
@@ -15,6 +16,17 @@ const COLLECTION_NAME: &str = "User";
 impl UserService {
     pub fn new(connection: Database) -> UserService {
         UserService { connection }
+    }
+
+    pub async fn find_by_id(&self, id: &ObjectId) -> Result<Option<User>, Error> {
+        let result = generic_dao::find_by_id(self.connection.clone(), COLLECTION_NAME, id).await?;
+
+        match result {
+            Some(user) => {
+                return Ok(bson::from_document(user)?);
+            }
+            None => return Ok(None),
+        }
     }
 
     pub async fn add_user(&self, user: &NewUser) -> Result<InsertOneResult, Error> {

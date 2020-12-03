@@ -1,27 +1,57 @@
-use crate::entity::user::NewUser;
+use actix_web::http::StatusCode;
 use actix_web::{get, post, web, HttpResponse, Responder};
+use log::{error, info};
+use validator::Validate;
+
+use crate::entity::user::NewUser;
 
 #[get("/users")]
 async fn get_users(app_data: web::Data<crate::AppState>) -> impl Responder {
+    info!("Fetching users...");
     let data = app_data.service_manager.user.get_users().await;
-    let result = web::block(move || data).await;
-    match result {
+    match data {
         Ok(result) => HttpResponse::Ok().json(result),
         Err(e) => {
-            println!("Get Users Error, {:?}", e);
+            error!("Get Users Error, {:?}", e);
             HttpResponse::InternalServerError().finish()
         }
     }
 }
 
 #[post("/users")]
-async fn add_user(app_data: web::Data<crate::AppState>, user: web::Json<NewUser>) -> impl Responder {
-    let action = app_data.service_manager.user.add_user(&user).await;
-    let result = web::block(move || action).await;
+async fn add_user(
+    app_data: web::Data<crate::AppState>,
+    user: web::Json<NewUser>,
+) -> impl Responder {
+    info!("Validating user data...");
+    match user.validate() {
+        Ok(_) => (),
+        Err(errors) => {
+            error!("Validation failed.");
+            return HttpResponse::build(StatusCode::BAD_REQUEST).json(errors);
+        }
+    };
+
+    info!("Creating new user.");
+    let result = app_data.service_manager.user.add_user(&user).await;
     match result {
-        Ok(result) => HttpResponse::Ok().json(result.inserted_id),
+        Ok(result) => {
+            info!("Fetching new user.");
+            let user_result = app_data
+                .service_manager
+                .user
+                .find_by_id(result.inserted_id.as_object_id().unwrap())
+                .await;
+            match user_result {
+                Ok(user) => HttpResponse::Ok().json(user),
+                Err(e) => {
+                    error!("Error occurred while creating user: {:?}", e);
+                    HttpResponse::InternalServerError().finish()
+                }
+            }
+        }
         Err(e) => {
-            println!("Add Use Error, {:?}", e);
+            error!("Error occurred while creating user: {:?}", e);
             HttpResponse::InternalServerError().finish()
         }
     }

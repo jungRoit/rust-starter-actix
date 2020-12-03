@@ -16,3 +16,4 @@ serde = "1.0.103"
 futures = "0.3.4"
 dotenv = "0.15.0"
 env_logger = "0.8.2"
+validator = { version = "0.12", features = ["derive"] }
