@@ -27,3 +27,15 @@ pub struct NewUser {
     #[validate(length(min = 8, message = "Password must be at least 8 characters long."))]
     pub password: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, Validate)]
+pub struct EmailQuery {
+    #[validate(email(message = "Email must be a valid email address."))]
+    pub email: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Validate)]
+pub struct UsernameQuery {
+    #[validate(length(min = 3, max = 20, message = "Username must be 3-20 characters long."))]
+    pub username: String,
+}

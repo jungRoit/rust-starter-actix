@@ -4,7 +4,7 @@ use bson::doc;
 use log::{error, info};
 use validator::Validate;
 
-use crate::entity::user::NewUser;
+use crate::entity::user::{EmailQuery, NewUser, UsernameQuery};
 
 #[get("/users")]
 async fn get_users(app_data: web::Data<crate::AppState>) -> impl Responder {
@@ -17,6 +17,80 @@ async fn get_users(app_data: web::Data<crate::AppState>) -> impl Responder {
             HttpResponse::InternalServerError().finish()
         }
     }
+}
+
+#[get("/users/checkEmail")]
+async fn check_email(
+    app_data: web::Data<crate::AppState>,
+    query: web::Query<EmailQuery>,
+) -> impl Responder {
+    info!("Validating query param...");
+    match query.validate() {
+        Ok(_) => (),
+        Err(errors) => {
+            error!("Validation failed.");
+            return HttpResponse::build(StatusCode::BAD_REQUEST).json(errors);
+        }
+    };
+
+    info!("Checking if email is taken...");
+    if app_data
+        .service_manager
+        .user
+        .check_email_taken(&query.email)
+        .await
+    {
+        return HttpResponse::build(StatusCode::BAD_REQUEST).json(doc! {
+            "email": [
+                {
+                    "code": "unique",
+                    "message": "A user already exists with this email.",
+                    "params": {
+                        "value": &query.email
+                    }
+                }
+            ]
+        });
+    }
+
+    return HttpResponse::Ok().finish();
+}
+
+#[get("/users/checkUsername")]
+async fn check_username(
+    app_data: web::Data<crate::AppState>,
+    query: web::Query<UsernameQuery>,
+) -> impl Responder {
+    info!("Validating query param...");
+    match query.validate() {
+        Ok(_) => (),
+        Err(errors) => {
+            error!("Validation failed.");
+            return HttpResponse::build(StatusCode::BAD_REQUEST).json(errors);
+        }
+    };
+
+    info!("Checking if username is taken...");
+    if app_data
+        .service_manager
+        .user
+        .check_username_taken(&query.username)
+        .await
+    {
+        return HttpResponse::build(StatusCode::BAD_REQUEST).json(doc! {
+            "username": [
+                {
+                    "code": "unique",
+                    "message": "Username already taken.",
+                    "params": {
+                        "value": &query.username
+                    }
+                }
+            ]
+        });
+    }
+
+    return HttpResponse::Ok().finish();
 }
 
 #[post("/users")]
@@ -101,4 +175,6 @@ async fn add_user(
 pub fn init(cfg: &mut web::ServiceConfig) {
     cfg.service(get_users);
     cfg.service(add_user);
+    cfg.service(check_email);
+    cfg.service(check_username);
 }
