@@ -13,7 +13,7 @@ pub struct User {
     pub password: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct NewUser {
     #[validate(length(min = 3, message = "Name is must be at least 3 characters long."))]
     pub name: String,

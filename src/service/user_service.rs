@@ -3,9 +3,11 @@ use bson::oid::ObjectId;
 use bson::Document;
 use futures::stream::StreamExt;
 use mongodb::{error::Error, results::InsertOneResult, Database};
+use std::env;
 
 use crate::dao::generic_dao;
 use crate::entity::user::{NewUser, User};
+use crate::utils::password;
 
 #[derive(Clone)]
 pub struct UserService {
@@ -64,8 +66,10 @@ impl UserService {
         return false;
     }
 
-    pub async fn add_user(&self, user: &NewUser) -> Result<InsertOneResult, Error> {
-        let document: Document = bson::to_document(user)?;
+    pub async fn add_user(&self, new_user: &NewUser) -> Result<InsertOneResult, Error> {
+        let mut user = (*new_user).clone();
+        user.password = password::hash(&new_user.password, &env::var("PASSWORD_SALT").unwrap());
+        let document: Document = bson::to_document(&user)?;
         return generic_dao::add(self.connection.clone(), COLLECTION_NAME, document).await;
     }
 

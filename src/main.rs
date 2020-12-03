@@ -12,6 +12,7 @@ mod db;
 mod entity;
 mod service;
 mod service_manager;
+mod utils;
 
 struct AppState {
     service_manager: ServiceManager,
