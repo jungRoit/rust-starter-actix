@@ -27,6 +27,18 @@ pub async fn find_by_id(
         .await;
 }
 
+pub async fn filter(
+    connection: Database,
+    collection_name: &str,
+    filter: impl Into<Option<Document>>,
+) -> mongodb::Cursor {
+    return connection
+        .collection(collection_name)
+        .find(filter, None)
+        .await
+        .unwrap();
+}
+
 pub async fn add(
     connection: Database,
     collection_name: &str,

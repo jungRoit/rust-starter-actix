@@ -1,3 +1,4 @@
+use bson::doc;
 use bson::oid::ObjectId;
 use bson::Document;
 use futures::stream::StreamExt;
@@ -27,6 +28,40 @@ impl UserService {
             }
             None => return Ok(None),
         }
+    }
+
+    pub async fn check_email_taken(&self, email: &String) -> bool {
+        let mut cursor = generic_dao::filter(
+            self.connection.clone(),
+            COLLECTION_NAME,
+            doc! {
+                "email": email
+            },
+        )
+        .await;
+
+        while let Some(_) = cursor.next().await {
+            return true;
+        }
+
+        return false;
+    }
+
+    pub async fn check_username_taken(&self, username: &String) -> bool {
+        let mut cursor = generic_dao::filter(
+            self.connection.clone(),
+            COLLECTION_NAME,
+            doc! {
+                "username": username
+            },
+        )
+        .await;
+
+        while let Some(_) = cursor.next().await {
+            return true;
+        }
+
+        return false;
     }
 
     pub async fn add_user(&self, user: &NewUser) -> Result<InsertOneResult, Error> {

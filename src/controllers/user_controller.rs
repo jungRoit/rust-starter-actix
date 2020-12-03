@@ -1,5 +1,6 @@
 use actix_web::http::StatusCode;
 use actix_web::{get, post, web, HttpResponse, Responder};
+use bson::doc;
 use log::{error, info};
 use validator::Validate;
 
@@ -31,6 +32,46 @@ async fn add_user(
             return HttpResponse::build(StatusCode::BAD_REQUEST).json(errors);
         }
     };
+
+    info!("Checking if email is taken...");
+    if app_data
+        .service_manager
+        .user
+        .check_email_taken(&user.email)
+        .await
+    {
+        return HttpResponse::build(StatusCode::BAD_REQUEST).json(doc! {
+            "email": [
+                {
+                    "code": "unique",
+                    "message": "A user already exists with this email.",
+                    "params": {
+                        "value": &user.email
+                    }
+                }
+            ]
+        });
+    }
+
+    info!("Checking if username is taken...");
+    if app_data
+        .service_manager
+        .user
+        .check_username_taken(&user.username)
+        .await
+    {
+        return HttpResponse::build(StatusCode::BAD_REQUEST).json(doc! {
+            "username": [
+                {
+                    "code": "unique",
+                    "message": "Username already taken.",
+                    "params": {
+                        "value": &user.username
+                    }
+                }
+            ]
+        });
+    }
 
     info!("Creating new user.");
     let result = app_data.service_manager.user.add_user(&user).await;
