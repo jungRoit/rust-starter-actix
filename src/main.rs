@@ -12,6 +12,7 @@ mod db;
 mod entity;
 mod service;
 mod service_manager;
+mod utils;
 
 struct AppState {
     service_manager: ServiceManager,
@@ -23,9 +24,7 @@ async fn main() -> std::io::Result<()> {
     env_logger::init();
 
     let server_url = env::var("HOST").expect("SERVER_URL Environment variable is not set.");
-    let database = db::create_connection();
-
-    // let user_collection = database.collection("User");
+    let database = db::create_connection().await;
 
     HttpServer::new(move || {
         let user_service_worker = UserService::new(database.clone());

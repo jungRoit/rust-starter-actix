@@ -1,50 +1,38 @@
-use bson::{doc, Bson, Document};
+use bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
-    pub name: String,
+    #[serde(rename = "_id")]
+    pub id: ObjectId,
+    pub first_name: String,
+    pub last_name: Option<String>,
     pub email: String,
+    #[serde(skip_serializing)]
     pub password: String,
 }
 
-pub fn deserialize(user: &User) -> Document {
-    let User {
-        name,
-        email,
-        password,
-    } = user;
-    doc! {
-      "name":name,
-      "email":email,
-      "password":password
-    }
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct NewUser {
+    #[validate(required)]
+    #[validate(length(min = 3, message = "First name is must be at least 3 characters long."))]
+    pub first_name: Option<String>,
+
+    #[validate(required)]
+    #[validate(email(message = "Email must be a valid email address."))]
+    pub email: Option<String>,
+
+    pub last_name: Option<String>,
+
+    #[validate(required)]
+    #[validate(length(min = 8, max = 35, message = "Password must be 8-35 characters long."))]
+    pub password: Option<String>,
 }
 
-fn build_user(name: String, email: String, password: String) -> User {
-    User {
-        name,
-        email,
-        password,
-    }
-}
-
-pub fn serialize(document: Document) -> User {
-    let mut _name = "".to_string();
-    let mut _email = "".to_string();
-    let mut _password = "".to_string();
-
-    if let Some(&Bson::String(ref name)) = document.get("name") {
-        _name = name.to_string();
-    }
-
-    if let Some(&Bson::String(ref email)) = document.get("email") {
-        _email = email.to_string();
-    }
-
-    if let Some(&Bson::String(ref password)) = document.get("password") {
-        _password = password.to_string();
-    }
-
-    return build_user(_name, _email, _password);
+#[derive(Debug, Serialize, Deserialize, Validate)]
+pub struct EmailQuery {
+    #[validate(required)]
+    #[validate(email(message = "Email must be a valid email address."))]
+    pub email: Option<String>,
 }
