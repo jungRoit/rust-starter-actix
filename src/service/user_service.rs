@@ -49,26 +49,13 @@ impl UserService {
         return false;
     }
 
-    pub async fn check_username_taken(&self, username: &String) -> bool {
-        let mut cursor = generic_dao::filter(
-            self.connection.clone(),
-            COLLECTION_NAME,
-            doc! {
-                "username": username
-            },
-        )
-        .await;
-
-        while let Some(_) = cursor.next().await {
-            return true;
-        }
-
-        return false;
-    }
-
     pub async fn add_user(&self, new_user: &NewUser) -> Result<InsertOneResult, Error> {
         let mut user = (*new_user).clone();
-        user.password = password::hash(&new_user.password, &env::var("PASSWORD_SALT").unwrap());
+
+        user.password = Some(password::hash(
+            &new_user.password.as_ref().unwrap(),
+            &env::var("PASSWORD_SALT").unwrap(),
+        ));
         let document: Document = bson::to_document(&user)?;
         return generic_dao::add(self.connection.clone(), COLLECTION_NAME, document).await;
     }

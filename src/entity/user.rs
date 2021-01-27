@@ -6,36 +6,33 @@ use validator::Validate;
 pub struct User {
     #[serde(rename = "_id")]
     pub id: ObjectId,
-    pub name: String,
+    pub first_name: String,
+    pub last_name: Option<String>,
     pub email: String,
-    pub username: String,
     #[serde(skip_serializing)]
     pub password: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct NewUser {
-    #[validate(length(min = 3, message = "Name is must be at least 3 characters long."))]
-    pub name: String,
+    #[validate(required)]
+    #[validate(length(min = 3, message = "First name is must be at least 3 characters long."))]
+    pub first_name: Option<String>,
 
+    #[validate(required)]
     #[validate(email(message = "Email must be a valid email address."))]
-    pub email: String,
+    pub email: Option<String>,
 
-    #[validate(length(min = 3, max = 20, message = "Username must be 3-20 characters long."))]
-    pub username: String,
+    pub last_name: Option<String>,
 
-    #[validate(length(min = 8, message = "Password must be at least 8 characters long."))]
-    pub password: String,
+    #[validate(required)]
+    #[validate(length(min = 8, max = 35, message = "Password must be 8-35 characters long."))]
+    pub password: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct EmailQuery {
+    #[validate(required)]
     #[validate(email(message = "Email must be a valid email address."))]
-    pub email: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Validate)]
-pub struct UsernameQuery {
-    #[validate(length(min = 3, max = 20, message = "Username must be 3-20 characters long."))]
-    pub username: String,
+    pub email: Option<String>,
 }
